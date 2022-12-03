@@ -1,0 +1,46 @@
+version: '3'
+
+services:
+  sql-database:
+    container_name: databaseContainer
+    environment:
+      - MYSQL_ROOT_PASSWORD=1234
+    build: 
+      context: .
+      dockerfile: Dockerfile
+      
+    ports:
+      - 49152:3306
+    volumes:
+     - containerdb:/var/lib/mysql
+    
+     
+  spring-boot-ems:
+    container_name: spring-boot-container
+    ports:
+      - 8080:8080
+    depends_on:
+      - sql-database
+   
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://sql-database:3306/new_schema?useSSL=false&allowPublicKeyRetrieval=true
+    build: 
+      context: ./demo
+      dockerfile: Dockerfile
+    
+      
+  angular:
+    container_name: angularContainer
+    ports: 
+      - 4200:4200
+    depends_on:
+      - spring-boot-ems
+    build: 
+      context: ./app1
+      dockerfile: Dockerfile
+    
+
+
+volumes:
+  containerdb:
+    external: true
